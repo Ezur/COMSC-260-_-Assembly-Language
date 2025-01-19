@@ -1,0 +1,139 @@
+; Assignment11.asm - Encryption Using Rotate Operations
+; Programmer: Elise Zur
+; Programmer ID: 1851550
+; Program Description: Write a procedure that performs simple
+;	encryption by rotating each plaintext byte a varying number
+;	of positions in different directions. For example, in the
+;	following array that represents the encryption key, a negative
+;	value indicates a rotation to the left and a positive value
+;	indicates a rotation to the right. The integer in each position
+;	indicates the magnitude of the rotation:
+;	key BYTE -5, 3, 2, -3, 0, 5, 2, -4, 7, 9
+
+INCLUDE Irvine32.inc
+
+BUFMAX = 128
+
+.data
+
+sPrompt BYTE "Please enter one plain text:",0
+sEncoded BYTE "The plain text after encoded:",0
+sDecoded BYTE "The plain text after decoded:",0
+
+sMessage byte "It is a secret message will be encoded and decoded.", 0
+size_message = ($ - sMessage) - 1
+key BYTE -5, 3, 2, -3, 0, 5, 2, -4, 7, 9
+key_size = ($ - key)
+
+messageSize DWORD ?
+
+messageBuf DWORD BUFMAX+1 DUP(?)			; array used to save user input
+encryptBuf DWORD BUFMAX+1 DUP(0)
+decryptBuf DWORD BUFMAX+1 DUP(0)
+
+.code
+main PROC
+
+call InputTheString
+
+;----------ENCRYPTS MESSAGE ------------------------------
+mov esi, OFFSET messageBuf
+mov ecx, messageSize
+mov edx, OFFSET encryptBuf
+;mov edx, 0
+
+	L4:
+		mov eax, 0			; this is a counter for KEY
+		mov edi, offset key
+	L1:
+		push ecx			; save ecx, because CL is used to count number of rotations
+		cmp eax, key_size	; compare KEY counter, if equal to KEY, jump L4, set counter to 0 and KEY to beginning
+		je L4
+		mov cl, [edi]		; unfortunately rotation doesnt work with pointers
+		mov bl, [esi]
+		cmp cl, 0			; if KEY value in CL is negative, then L2 and rotate to the left
+		jl L2
+		ror bl, cl
+		jmp L3
+	L2:
+		rol bl, cl
+	L3:
+		mov[edx], bl
+		inc esi
+		inc edi
+		inc edx
+		inc eax
+		pop ecx
+		loop L1
+
+mov edx, OFFSET sEncoded
+call WriteString
+call Crlf
+mov edx, OFFSET encryptBuf
+call WriteString
+
+call Crlf
+;---------------------------------------------------------
+
+;----------DECRYPTS MESSAGE ------------------------------
+;ROR should be changed to ROL and vice versa
+
+mov esi, offset encryptBuf
+mov ecx, messageSize
+mov edx, offset decryptBuf
+
+	L5 :
+		mov eax, 0
+		mov edi, offset key
+	L6 :
+		push ecx
+		cmp eax, key_size
+		je L5
+		mov cl, [edi]
+		mov bl, [esi]
+		cmp cl, 0
+		jl L7
+		rol bl, cl
+		jmp L8
+	L7 :
+		ror bl, cl
+	L8 :
+		mov[edx], bl
+		inc esi
+		inc edi
+		inc edx
+		inc eax
+		pop ecx
+		loop L6
+
+call Crlf
+mov edx, OFFSET sDecoded
+call WriteString
+call Crlf
+mov edx, OFFSET decryptBuf
+call WriteString
+
+call Crlf
+
+invoke ExitProcess, 0
+exit
+main ENDP
+;---------------------------------------------------------
+
+;---------------------------------------------------------
+InputTheString PROC
+	pushad
+	mov	edx, OFFSET sPrompt		; display a prompt
+	call WriteString
+	call Crlf
+	mov	ecx, BUFMAX				; maximum character count
+	mov	edx, OFFSET messageBuf	; point to the buffer
+	call ReadString         	; input the string
+	mov	messageSize, eax        	; save the length
+	call Crlf
+	popad
+	ret
+InputTheString ENDP
+;---------------------------------------------------------
+
+END main
