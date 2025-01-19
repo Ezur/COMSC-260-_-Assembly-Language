@@ -1,0 +1,57 @@
+; Assignment7.asm - BetterRandomRange Procedure
+; Programmer: Elise Zur
+; Programmer ID: 1851550
+; Program Description: 
+
+INCLUDE Irvine32.inc
+
+.data
+
+lowerBound BYTE "Please enter the lower bound: ", 0
+upperBound BYTE "Please enter the upper bound: ", 0
+
+.code
+main PROC
+
+mov ecx, 3							; counter for L1 to loop 3x
+
+L1:
+	push ecx						; save the outer loop
+
+	; lowerBound
+	mov edx, OFFSET lowerBound
+	call WriteString				; prints prompt to console, user enters input
+	call ReadInt					; save user input into EAX
+	mov ebx, eax					; move input into EBX
+	call Crlf
+
+	; upperBound
+	mov edx, OFFSET upperBound
+	call WriteString				
+	call ReadInt					; saves user input into EAX
+	
+	mov ecx, 30						; counter for L2 to loop 30x
+
+L2:									; nested loop
+	pushad
+	call BetterRandomRange
+	popad
+	Loop L2
+	
+	pop ecx							; must restore the counter back to 3
+	Loop L1
+
+
+BetterRandomRange PROC
+	sub eax, ebx			; subtract the values to get the range
+	call RandomRange		; call randomRange func (uses the custom range)
+	add eax, ebx			; add ebx back to eax to get the random number (pos range)
+	mov edx, eax			; move value of EAX reg into EDX reg
+	call WriteInt			; func will pull from EDX reg to write to console
+	call Crlf
+	ret
+BetterRandomRange ENDP
+	
+	Invoke ExitProcess,0
+main ENDP
+END main
