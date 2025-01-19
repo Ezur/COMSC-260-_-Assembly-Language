@@ -1,0 +1,61 @@
+; LabExercise7.asm - Updated from Reverse the String Program
+; Programmer: Elise Zur
+; Programmer ID: 1851550
+; Program Description: This program allows the user to inpur a string 
+;	between 1-50 char. Then, reverse the content from the user's input.
+
+INCLUDE Irvine32.inc
+
+.data
+
+inputPrompt BYTE "Please enter a string within 50-characters: ", 0
+
+buffer BYTE 51 DUP(0)		; input buffer
+byteCount DWORD ?			; holds counter
+
+.code
+main proc
+
+; Print the input prompt
+mov edx, OFFSET inputPrompt
+call WriteString
+call Crlf
+
+; ReadingString procedure
+mov edx, OFFSET buffer		; point to the buffer
+mov ecx, SIZEOF buffer		; specify max characters
+call Readstring				; input the string
+mov byteCount, eax			; number of characters
+
+; Push the name on the stack.
+mov	 ecx, byteCount
+mov	 esi, 0
+
+L1:	movzx eax, buffer[esi]	; get character
+	push eax				; push on stack
+	inc	 esi
+	loop L1
+
+; Print the original string
+mov  edx, OFFSET buffer
+call WriteString
+call Crlf
+
+; Pop the name from the stack in reverse
+; and store it in the inputPrompt array.
+
+mov	 ecx, byteCount
+mov	 esi, 0
+
+L2:	pop  eax						; get character
+	mov	 buffer[esi], al		; store in string
+	inc	 esi
+	loop L2
+
+; Print out the reversed string
+mov  edx, OFFSET buffer
+call WriteString
+call Crlf
+	Invoke ExitProcess,0
+main endp
+end main
