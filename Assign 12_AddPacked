@@ -1,0 +1,126 @@
+; Assignment12.asm - AddPacked
+; Programmer: Elise Zur
+; Programmer ID: 1851550
+; Program Description: Write a test program 
+;	that passes AddPacked pairs of packed 
+;	decimal integers: 4-byte, 8-byte, and 
+;	16-byte below, and display the result
+;	in the console window.
+
+INCLUDE Irvine32.inc
+
+.data
+
+packed_1a WORD 4536h
+packed_1b WORD 7297h
+sum_1 DWORD ?
+sizeSet_1 = SIZEOF packed_1a / TYPE WORD
+ 
+packed_2a DWORD 67345620h
+packed_2b DWORD 54496342h
+sum_2 DWORD 2 DUP(0)
+sizeSet_2 = SIZEOF sum_2 / TYPE DWORD
+
+packed_3a QWORD 6734562000346521h
+packed_3b QWORD 5449634205738261h
+sum_3 DWORD 3 DUP(0)
+sizeSet_3 = SIZEOF sum_3 / TYPE QWORD
+
+.code
+main PROC
+
+;------------SET 1----------------------
+mov esi, OFFSET packed_1a				; esi pointer to 1st #
+mov edi, OFFSET packed_1b				; edi pointer to 2nd #
+mov edx, OFFSET sum_1					; edx pointer to sum result
+mov ecx, sizeSet_1						; # of bytes to add
+call AddPacked
+
+mov esi, OFFSET sum_1
+add esi, sizeSet_1 * TYPE WORD
+mov ecx, sizeSet_1
+mov edx, TYPE WORD
+call DisplayResult
+
+;------------SET 2----------------------
+mov esi, OFFSET packed_2a				; esi pointer to 1st #			
+mov edi, OFFSET packed_2b				; edi pointer to 2nd #
+mov edx, OFFSET sum_2					; edx pointer to sum result
+mov ecx, sizeSet_2						; # of bytes to add
+call AddPacked
+
+mov esi, OFFSET sum_2
+add esi, sizeSet_2 * TYPE DWORD
+mov ecx, sizeSet_2
+mov edx, TYPE DWORD
+call DisplayResult
+
+;------------SET 3----------------------
+mov esi, OFFSET packed_3a				; esi pointer to 1st #		
+mov edi, OFFSET packed_3b				; edi pointer to 2nd #
+mov edx, OFFSET sum_3					; edx pointer to sum result
+mov ecx, sizeSet_3						; # of bytes to add
+call AddPacked
+
+mov esi, OFFSET sum_3
+add esi, sizeSet_3 * TYPE QWORD
+mov ecx, sizeSet_3
+mov edx, TYPE QWORD
+call DisplayResult
+
+exit
+main ENDP
+
+;------------------------------------------
+AddPacked PROC
+	pushad
+
+	L1:
+		; Add low bytes
+		mov al, BYTE PTR [esi]		; store 1st digit in AL
+		add al, BYTE PTR [edi]		; add 2nd digit to AL
+		daa							; adjust sum
+		mov	BYTE PTR [edx], al		; store sum
+
+		inc esi						; increment pointers
+		inc edi
+		inc edx
+
+		; Add high bytes, include carry
+		mov al, BYTE PTR [esi]		; store 1st digit in AL
+		adc al, BYTE PTR [edi]		; add with carry 2nd digit to AL
+		daa							; adjust sum
+		mov BYTE PTR [edx], al		; store sum
+
+		inc esi						; increment pointers
+		inc edi
+		inc edx
+		loop L1						; ends when ecx = 0
+
+		; Add final carry, if any
+		mov al, 0
+		adc al, 0						; add with carry
+		mov BYTE PTR [edx], al			; save last generated carry
+
+		popad
+		ret
+AddPacked ENDP
+;------------------------------------------
+
+;------------------------------------------
+DisplayResult PROC
+	pushad
+	L1:
+		sub esi, edx
+		mov eax, [esi]
+		call WriteHex
+		loop L1
+		
+	call Crlf
+	popad
+	ret
+DisplayResult ENDP
+;------------------------------------------
+
+
+END main
