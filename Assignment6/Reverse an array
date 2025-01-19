@@ -1,0 +1,56 @@
+; Assignment6.asm - Reverse an Array
+; Programmer: Elise Zur
+; Programmer ID: 1851550
+; Program Description: Use loops with indexed and indirect addressing to 
+;	reverse and reverse back the elements of an integer array. 
+;	Using SIZEOF, TYPE, and LENGTHOF operators. 
+
+.386
+.model flat,stdcall
+.stack 4096
+ExitProcess PROTO, dwExitCode:DWORD
+
+.data
+	myArray DWORD 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100
+
+.code
+main PROC
+	; Index Addressing Swap (Part 1)
+
+	mov esi, OFFSET myArray					; ESI = beginning address of myArray (pointer)
+	mov edi, OFFSET myArray					; EDI = beginning address of myArray (pointer)
+	mov esi, 0								; index register set to 0 / first element
+	mov edi, 0								; index register set to 0 / first element
+	add edi, SIZEOF myArray					; moves the pointer one more than the last element
+	sub edi, TYPE myArray					; subtract one to move pointer to last element / correct position
+	mov ecx, LENGTHOF myArray / 2			; initialize loop counter to half of length (element will swap 1x)
+
+L1:
+	mov ebx, [myArray + esi]				; move value of first element in EBX
+	mov edx, [myArray + edi]				; move value of last elemnet in EDX
+	mov myArray[edi], ebx					; move value of ebx to last element location
+	mov myArray[esi], edx					; move value of EDX to first element location
+	add esi, TYPE myArray					; point to next element, moving forwards
+	sub edi, TYPE myArray					; point to next element, moving backwards
+	loop L1
+
+	; Indirect Address Swap (Part 2)
+	mov esi, OFFSET myArray					; ESI = beginning address of myArray (pointer)
+	mov edi, OFFSET myArray					; EDI = beginning address of myArray (pointer)
+	add edi, SIZEOF myArray					; moves the pointer one more than the last element address
+	sub edi, TYPE myArray					; subtract one to move pointer to last ADDRESS!
+	mov ecx, LENGTHOF myArray / 2			; initialize loop counter to half of length (element will swap 1x)
+
+L2:
+	mov ebx, [esi]							; you dont need to use 'myArray' in the syntax because we are swapping the addresses
+	mov edx, [edi]
+	mov [esi], edx
+	mov [edi], ebx
+	add esi, TYPE myArray
+	sub edi, TYPE myArray
+	loop L2
+	
+
+INVOKE ExitProcess,0
+main ENDP
+END main
