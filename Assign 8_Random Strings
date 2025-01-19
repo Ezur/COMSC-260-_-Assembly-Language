@@ -1,0 +1,55 @@
+; Assignment8.asm - Random Strings
+; Programmer: Elise Zur
+; Programmer ID: 1851550
+; Program Description: Using CreateRandomString procedure to generate
+;	20 random strings. Each random string with a random length
+;	between 1-100.
+
+INCLUDE Irvine32.inc
+
+.data
+string_array BYTE ?
+
+.code
+main PROC
+	
+	call Clrscr
+	call Randomize
+	mov esi, OFFSET string_array
+	mov ecx, 20							; loop counter for 20 lines
+
+L1: ; each line
+	push ecx
+	; re-initializing esi so we start at the beginning
+	call CreateRandomString
+	mov edx, esi						; move array (esi) into edx so it will print the entire array
+	call WriteString
+	call Crlf
+	loop L1
+
+	call WaitMsg
+	exit
+main ENDP
+
+CreateRandomString PROC USES ecx
+	
+	mov eax, 100				; generating random length of array
+	call RandomRange			;	from 0-99
+	add eax, 1					; add one to account for 1-100
+	mov ecx, eax				; loop counter set for # of letters in string
+
+L2:
+	mov eax, 26					; generating a random number from 0-25
+	call RandomRange
+
+	add eax, 65					; add 65 to that number, going from A-Z in ASCII
+	mov [esi], eax				; putting the letter into the array
+	add esi, TYPE string_array	; incrementing the pointer by adding a BYTE to esi
+	loop L2
+
+	mov esi, OFFSET string_array	; moving address of array back to the start
+	ret
+CreateRandomString ENDP
+
+Invoke ExitProcess,0
+END main
