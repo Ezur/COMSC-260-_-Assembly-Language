@@ -1,0 +1,109 @@
+; Assignment9.asm - Message Encryption
+; Programmer: Elise Zur
+; Programmer ID: 1851550
+; Program Description: 
+;	Create an encryption key consisting of multiple characters. 
+;	Use this key to encrypt and decrypt the plaintext by XOR-ing each character of the key against a corresponding byte in the message. 
+;	Repeat the key as many times as necessary until all plain text bytes are translated.
+
+INCLUDE Irvine32.inc
+
+BUFMAX = 128     	; maximum buffer size
+
+.data
+sPrompt  BYTE  "Enter the plain text: ",0
+sEncrypt BYTE  "Cipher text:          ",0
+sDecrypt BYTE  "Decrypted:            ",0
+sKey	 BYTE  "Enter the encription key: ",0
+buffer   BYTE   BUFMAX+1 DUP(0)						; array used to save user input
+bufSize  DWORD  ?									; 
+
+keyBuf	 BYTE	?		; array to store key values from user's input
+
+.code
+main PROC
+	call	InputTheString		; input the plain text
+
+	mov eax, 0
+	mov	edx, OFFSET sKey		; display a prompt
+	call	WriteString
+	mov edx, OFFSET keyBuf
+	mov ecx, BUFMAX
+	call ReadString
+	call Crlf
+	
+	call	TranslateBuffer		; encrypt the buffer
+	mov	edx,OFFSET sEncrypt		; display encrypted message
+	call	DisplayMessage
+	call	TranslateBuffer  	; decrypt the buffer
+	mov	edx,OFFSET sDecrypt		; display decrypted message
+	call	DisplayMessage
+
+	exit
+main ENDP
+
+;-----------------------------------------------------
+InputTheString PROC
+;
+; Prompts user for a plaintext string. Saves the string 
+; and its length.
+; Receives: nothing
+; Returns: nothing
+;-----------------------------------------------------
+	pushad
+	mov	edx, OFFSET sPrompt	; display a prompt
+	call	WriteString
+	mov	ecx, BUFMAX		; maximum character count
+	mov	edx, OFFSET buffer   ; point to the buffer
+	call	ReadString         	; input the string
+	mov	bufSize, eax        	; save the length
+	call	Crlf
+	popad
+	ret
+InputTheString ENDP
+
+;-----------------------------------------------------
+DisplayMessage PROC
+;
+; Displays the encrypted or decrypted message.
+; Receives: EDX points to the message
+; Returns:  nothing
+;-----------------------------------------------------
+	pushad
+	call	WriteString
+	mov	edx, OFFSET buffer	; display the buffer
+	call	WriteString
+	call	Crlf
+	call	Crlf
+	popad
+	ret
+DisplayMessage ENDP
+
+;-----------------------------------------------------
+TranslateBuffer PROC
+;
+; Translates the string by exclusive-ORing each
+; byte with the encryption key byte.
+; Receives: nothing
+; Returns: nothing
+;-----------------------------------------------------
+	pushad
+	mov	ecx, bufSize		; loop counter
+	mov	esi, 0				; index 0 in buffer
+L2:
+	mov eax, 0				; counting index of the key
+
+L1:
+	mov BL, keyBuf[eax]
+	cmp eax, LENGTHOF keyBuf		; LENGTHOF keyBuf = keySize for the array count
+	je L2
+	mov dh, keyBuf[eax]
+	xor	buffer[esi], dh				; translate a byte
+	inc	esi							; point to next byte
+	inc eax
+	loop L1
+
+	popad
+	ret
+TranslateBuffer ENDP
+END main
