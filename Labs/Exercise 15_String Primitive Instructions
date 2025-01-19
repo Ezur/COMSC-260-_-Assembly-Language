@@ -1,0 +1,86 @@
+; LabExercise15.asm - String Primitive Instructions Practices
+; Programmer: Elise Zur
+; Programmer ID: 1851550
+; Program Description: Write a program that included the following instructions:
+;	1. Using CMPSW that compare two arrays of 16-bit values named sourcew and targetw.
+;	2. Use SCASW to scan for a 16-bit value (for example, 0050h) in an array named wordArray,
+;	   and copy the offset of the matched member into the EAX registerand display the location.
+
+INCLUDE Irvine32.inc
+
+.data
+
+Sourcew WORD 10, 20, 30
+Targetw WORD 10, 20, 35
+WordArray WORD 10h, 20h, 30h, 40h
+
+COUNT = ($ - Targetw) / TYPE WORD
+
+beforeSearch BYTE "Before searching, EDI is located at: ", 0
+not_Equal BYTE "Source Array and Target Array are NOT the same.", 0
+searching BYTE "Searching for the matched word: ", 0
+afterSearch BYTE "After searching, the matched word is located at: ", 0
+error BYTE "No matched word is found.",0
+
+.code
+main PROC
+	mov ecx, COUNT
+	mov esi, OFFSET Targetw
+	mov edi, OFFSET Sourcew				; move addressaes to esi and edi respectively
+	cld
+	repe cmpsw							; using CMPSW to compare two arrays of 16 bit values Sourcew and Targetw
+
+	jne ifNotEqual						; if values are not equal
+
+	ifNotEqual:
+		mov edx, OFFSET not_Equal
+		call WriteString
+		call Crlf						; writes the message in the case of not equal
+
+	; "Use SCASW to scan for the 16-bit value in an array named wordArray,
+	; and copy the offset of the matching member into the EAX register."
+	mov ecx, LENGTHOF WordArray			; loop will run the size of the array
+	mov edi, OFFSET WordArray
+	mov ax, 30h							; ax = 30h value of word to search for
+	
+	mov edx, OFFSET beforeSearch		; output "Before searching..."
+	call WriteString
+	push eax
+	mov eax, edi
+	call WriteHex						; output EDI location in hex
+	pop eax
+	call Crlf
+
+	mov edx, OFFSET searching			; output "Searching for..."
+	call WriteString
+	push eax
+	movsx eax, ax
+	call WriteHex						; output the word in hex
+	pop eax
+	call Crlf
+	
+	cld
+	repne scasw							; call SCASW operation
+	jnz NoMatch
+	je Match
+
+	NoMatch:
+		mov edx, offset error			; error message
+		call WriteString				; call to write the string of error
+		jmp Quit						; then jump to Quit the program
+
+	Match:
+		mov edx, OFFSET afterSearch
+		call WriteString
+		dec edi
+		dec edi
+		mov eax, edi
+		call WriteHex
+		jmp Quit
+
+	Quit:
+		call CRLF
+		call WaitMsg
+
+main ENDP
+END main
