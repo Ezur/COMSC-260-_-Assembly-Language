@@ -1,0 +1,161 @@
+; Assignment13.asm - Greatest Common Divisor
+; Programmer: Elise Zur
+; Programmer ID: 1851550
+; Program Description: Write a recursive procedure
+;	of Euclidís algorithm for finding the greatest
+;	common divisor (GCD) of two integers.
+
+INCLUDE Irvine32.inc
+
+.data
+
+num1a DWORD 35d
+num1b DWORD 15d
+
+num2a DWORD 72d
+num2b DWORD 18d
+
+num3a DWORD 31d
+num3b DWORD 17d
+
+num4a DWORD 128d
+num4b DWORD 640d
+
+num5a DWORD 121d
+num5b DWORD 0d
+
+display1 BYTE "Greatest common divisor between ",0
+display2 BYTE " and ",0
+display3 BYTE " is: ",0
+
+.code
+main PROC
+
+;------------PAIR 1----------------------
+mov eax, num1a
+mov ebx, num1b
+call GetGCD
+mov edx, OFFSET display1
+call WriteString
+call WriteDec
+mov edx, OFFSET display2
+call WriteString
+mov eax, ebx
+call WriteDec
+mov edx, OFFSET display3
+call WriteString
+mov eax, ecx
+call WriteDec
+call Crlf
+
+
+;------------PAIR 2----------------------
+mov eax, num2a
+mov ebx, num2b
+call GetGCD
+mov edx, OFFSET display1
+call WriteString
+call WriteDec
+mov edx, OFFSET display2
+call WriteString
+mov eax, ebx
+call WriteDec
+mov edx, OFFSET display3
+call WriteString
+mov eax, ecx
+call WriteDec
+call Crlf
+
+;------------PAIR 3----------------------
+mov eax, num3a
+mov ebx, num3b
+call GetGCD
+mov edx, OFFSET display1
+call WriteString
+call WriteDec
+mov edx, OFFSET display2
+call WriteString
+mov eax, ebx
+call WriteDec
+mov edx, OFFSET display3
+call WriteString
+mov eax, ecx
+call WriteDec
+call Crlf
+
+;------------PAIR 4----------------------
+mov eax, num4a
+mov ebx, num4b
+call GetGCD
+mov edx, OFFSET display1
+call WriteString
+call WriteDec
+mov edx, OFFSET display2
+call WriteString
+mov eax, ebx
+call WriteDec
+mov edx, OFFSET display3
+call WriteString
+mov eax, ecx
+call WriteDec
+call Crlf
+
+;------------PAIR 5----------------------
+mov eax, num5a
+mov ebx, num5b
+call GetGCD
+mov edx, OFFSET display1
+call WriteString
+call WriteDec
+mov edx, OFFSET display2
+call WriteString
+mov eax, ebx
+call WriteDec
+mov edx, OFFSET display3
+call WriteString
+mov eax, ecx
+call WriteDec
+call Crlf
+
+exit
+main ENDP
+
+;------------------------------------------
+GetGCD PROC
+	push eax
+	push ebx
+
+	cmp eax, ebx		; check if a < b
+	jnc L1				; swap if eax > ebx
+	mov ecx, eax
+	mov eax, ebx
+	mov ebx, ecx
+	L1:
+		cmp ebx, 0		; if ebx = 0, quit
+		jz L2			; a = GCD of a and b
+
+	mov edx, 0
+	div ebx				; divide a / b, get remainder
+						; answer = eax, remainder = edx
+	cmp edx, 0
+	jz L3				; end function if edx(remainder) = 0
+
+	mov eax, ebx		; replace a by b 
+	mov ebx, edx		; replace b by r
+	call GetGCD			; call GCD procedure total of 5 times
+
+	jmp L4
+
+	L3:
+		mov eax, ebx
+	L2: 
+		mov ecx, eax
+
+	L4:
+		pop eax
+		pop ebx
+		ret
+GetGCD ENDP
+;------------------------------------------
+
+END main
