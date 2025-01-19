@@ -1,0 +1,165 @@
+; LabExercise12.asm - ArrayFilln
+; Programmer: Elise Zur
+; Programmer ID: 1851550
+; Program Description: Write the ArrayFilln procedures which 
+;	fill an array with 32-bit random integers with two local
+;	variables, UPPER and LOWER, as the upper and lower bounds
+;	to generate random numbers.
+
+INCLUDE Irvine32.inc
+
+.data
+
+count = 25
+array DWORD count DUP(?)
+
+prompt1  BYTE  "=== The output from ArrayFill1 ===",0
+prompt2  BYTE  "=== The output from ArrayFill2 ===",0
+prompt3  BYTE  "=== The output from ArrayFill3 ===",0
+
+.code
+main PROC
+	
+;----------1-------------------------------------
+	mov edx,OFFSET prompt1
+	call WriteString
+	call CRLF
+
+	push OFFSET array
+	push COUNT
+	call ArrayFill1
+	
+	mov ECX, count
+	mov ESI, 0
+L1:
+	mov eax, array[ESI]
+	CALL WriteInt
+	CALL CRLF
+	add ESI, type array
+	Loop L1
+
+;----------2-------------------------------------
+	mov edx,OFFSET prompt2
+	call WriteString
+	call CRLF
+
+	push OFFSET array
+	push COUNT
+	call ArrayFill2
+	
+	mov ECX, count
+	mov ESI, 0
+L2:
+	mov eax, array[ESI]
+	CALL WriteInt
+	CALL CRLF
+	add ESI, type array
+	Loop L2
+
+;----------3-------------------------------------
+	mov edx,OFFSET prompt3
+	call WriteString
+	call CRLF
+
+	push OFFSET array
+	push COUNT
+	call ArrayFill3
+	
+	mov ECX, count
+	mov ESI, 0
+L3:
+	mov eax, array[ESI]
+	CALL WriteInt
+	CALL CRLF
+	add ESI, type array
+	Loop L3
+
+	exit
+
+main ENDP
+
+;----------ARRAYFILL FUNCTION 1--------------------------------
+ArrayFill1 PROC	
+	push ebp
+	mov	ebp, esp
+	sub esp, 8
+	pushad								; save registers
+
+	mov	esi, [ebp+12]					; offset of array
+	mov	ecx, [ebp+8]					; array size
+	mov DWORD PTR [ebp-4], 200			; upper (local)
+	mov DWORD PTR [ebp-8], -100			; lower (local)
+
+	cmp	ecx,0							; ECX == 0?
+	je Random							; yes: skip over loop
+
+	Random:
+		mov	eax, [ebp-4]				; 0-200
+		sub eax, [ebp-8]				; 0-300
+		call	RandomRange				; random
+		add eax, [ebp-8]				; minus 100
+		mov	[esi], EAX
+		add	esi,TYPE DWORD
+	loop Random
+
+	popad								; restore registers
+	mov esp, ebp						; remove local
+	pop	ebp
+	ret	8								; clean up the stack
+
+ArrayFill1 ENDP
+
+;----------ARRAYFILL FUNCTION 2--------------------------------
+ArrayFill2 PROC	
+	enter 8,0
+	pushad
+
+	mov	esi,[ebp+12]				; offset of array
+	mov	ecx,[ebp+8]					; array size
+	mov DWORD PTR [ebp-4], 200
+	mov DWORD PTR [ebp-8], -100
+	
+	cmp	ecx,0						; ECX == 0?
+	je	Random						; yes: skip over loop
+
+	Random:
+		mov	eax, [ebp-4]			; 0-200
+		sub eax, [ebp-8]			; 0-300
+		call RandomRange			; random
+		add eax, [ebp-8]			; subtract 100
+		mov	[esi], EAX
+		add	esi, TYPE DWORD
+	loop Random
+
+	popad							; restore registers
+	leave
+	ret
+
+ArrayFill2 ENDP
+
+;----------ARRAYFILL FUNCTION 3--------------------------------
+ArrayFill3 PROC	
+	LOCAL upper:DWORD, lower: DWORD
+	pushad
+
+	mov	esi,[ebp+12]		; offset of array
+	mov	ecx,[ebp+8]			; array size
+	mov upper, 200
+	mov lower, -100
+
+	cmp	ecx,0				; ECX == 0?
+	je	Random				; yes: skip over loop
+
+	Random:
+		mov	eax, upper			; 0-200
+		sub eax, lower			; 0-300
+		call RandomRange		; random
+		add eax, lower			; minus 100
+		mov	[esi], EAX
+		add	esi,TYPE DWORD
+	loop Random
+
+	ret
+ArrayFill3 ENDP
+
+END main
