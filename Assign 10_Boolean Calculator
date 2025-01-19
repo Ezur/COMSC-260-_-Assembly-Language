@@ -1,0 +1,229 @@
+; Assignment10.asm - Boolean Calculator 
+; Programmer: Elise Zur
+; Programmer ID: 1851550
+; Program Description: Create a program that functions as a 
+;	simple boolean calculator for 32-bit integers.
+
+INCLUDE Irvine32.inc
+
+.data
+sMenu BYTE "---- Boolean Calculator ----", 0dh, 0ah
+	BYTE "1. x AND y", 0dh, 0ah
+	BYTE "2. x OR y", 0dh, 0ah
+	BYTE "3. NOT x", 0dh, 0ah
+	BYTE "4. x XOR y", 0dh, 0ah
+	BYTE "5. Exit program",0
+
+sAND BYTE "Boolean AND",0
+sOR  BYTE "Boolean OR",0
+sNOT BYTE "Boolean NOT",0
+sXOR BYTE "Boolean XOR",0
+
+sInt1 BYTE "Input the first 32-bit hexadecimal integer:  ",0
+sInt2 BYTE "Input the second 32-bit hexadecimal integer: ",0
+sResult BYTE "The 32-bit hexadecimal result is:            ",0
+
+sUserInput BYTE "Enter integer> ",0
+sInvalidInput BYTE "Invalid input! Enter 1 ~ 5 only", 0
+
+input1_arr DWORD ?
+input2_arr DWORD ?
+
+; CASE TABLE ///////////////////////////////////////////////////
+caseTable BYTE '1'			; lookup value
+	DWORD AND_op			; address of procedure
+
+EntrySize = ($ - caseTable )
+	BYTE '2'
+	DWORD OR_op
+	BYTE '3'
+	DWORD NOT_op
+	BYTE '4'
+	DWORD XOR_op
+	BYTE '5'
+	DWORD ExitProgram
+
+NumberOfEntries = ($ - caseTable) / EntrySize
+
+; ///////////////////////////////////////////////////////////////
+.code
+main PROC
+
+Menu:
+	mov edx, OFFSET sMenu	; menu choices
+	call WriteString		; display menu
+	call Crlf				; go to next output line
+	call Crlf
+
+UserInput:	
+	mov edx, OFFSET sUserInput
+	call WriteString
+
+	call ReadChar					; user input
+	call WriteChar
+
+	cmp al, '5'						; verify correct input (1-5)
+	ja InvalidInput
+	cmp al, '1'
+	jb InvalidInput
+	call Crlf
+	call ChooseProcedure
+	call Crlf
+	jmp Menu
+
+InvalidInput:
+	call Crlf
+	mov edx, OFFSET sInvalidInput
+	call WriteString
+	call Crlf
+	jmp Menu				; display menu again
+
+main ENDP
+
+; ///////////////////////////////////////////////////
+ChooseProcedure PROC
+	pushad						; push all registers onto stack
+	mov ebx, OFFSET caseTable	; pointer to the table
+	mov ecx, NumberOfEntries	; loop counter
+
+L1:	
+	cmp al, [ebx]				; match found?
+	jne L2						; if no, continue
+	call NEAR PTR [ebx + 1]		; if yes, call procedure
+	call Crlf
+	jmp L3
+
+L2:
+	add ebx, EntrySize			; point to the next entry
+	loop L1	
+
+L3:	
+	popad
+	ret	
+ChooseProcedure ENDP
+
+; ///////////////////////////////////////////////////
+AND_op PROC
+	pushad	
+	mov edx, OFFSET sAND
+	call WriteString			; display name of operation
+	call Crlf
+	call Crlf
+
+	mov edx, OFFSET sInt1
+	call WriteString			; ask user for first int
+	call ReadHex				; display hex integer
+	mov input1_arr, eax			; move first operand to first input array
+
+	mov edx, OFFSET sInt2		
+	call WriteString			; ask for second integer
+	call ReadHex				; display second hex int
+	mov input2_arr, eax			; move second operand to second input array
+
+	mov eax, input1_arr
+	mov ebx, input2_arr
+	AND eax, ebx				; int1 AND int2
+
+	mov edx, OFFSET sResult
+	call WriteString			; display result
+	call WriteHex				; display hex to window
+	call Crlf
+	popad	
+	ret		
+AND_op ENDP
+
+; ///////////////////////////////////////////////////
+OR_op PROC
+	pushad		
+	mov edx, OFFSET sOR	
+	call WriteString			; display name of operation
+	call Crlf
+	call Crlf
+
+	mov edx, OFFSET sInt1
+	call WriteString			; ask user for first int
+	call ReadHex				; display hex integer
+	mov input2_arr, eax			; move operand to second input array
+
+	mov eax, input1_arr
+	mov ebx, input2_arr
+	mov edx, OFFSET sInt2		
+	call WriteString			; ask for second integer
+	call ReadHex				; display second hex int
+	mov input2_arr, eax
+
+	mov eax, input1_arr
+	mov ebx, input2_arr
+	OR eax, ebx					; int1 OR int2
+
+	mov edx, OFFSET sResult
+	call WriteString			; display result
+	call WriteHex				; display hex to window
+	call Crlf
+	popad	
+	ret	
+OR_op ENDP
+
+; ///////////////////////////////////////////////////
+NOT_op PROC
+	pushad
+	mov edx, OFFSET sNOT
+	call WriteString			; display name of operation
+	call Crlf
+	call Crlf
+
+	mov edx, OFFSET sInt1		
+	call WriteString			; ask user for first int
+	call ReadHex				; display hex integer
+	mov input1_arr, eax
+
+	mov eax, input1_arr
+	NOT eax						; NOT operand
+
+	mov edx, OFFSET sResult
+	call WriteString			; ask user for second int
+	call WriteHex				; EAX = result
+	call Crlf
+	popad
+	ret	
+
+NOT_op ENDP
+
+; ///////////////////////////////////////////////////
+XOR_op PROC
+	pushad		
+	mov edx, OFFSET sXOR		
+	call WriteString			; display name of operation
+	call Crlf
+	call Crlf
+
+	mov edx, OFFSET sInt1	
+	call WriteString			; ask user for first int
+	call ReadHex				; display hex int
+	mov input1_arr, eax			; move first operand to first input array
+
+	mov edx, OFFSET sInt2		
+	call WriteString			; ask user for second int
+	call ReadHex				; display second hex int
+	mov input2_arr, eax
+
+	mov eax, input1_arr
+	mov ebx, input2_arr
+	XOR eax, ebx				; int1 XOR int2
+
+	mov edx, OFFSET sResult		; result of operation
+	call WriteString
+	call WriteHex				; display hex to window
+	call Crlf
+	popad		
+	ret			
+
+XOR_op ENDP
+; ///////////////////////////////////////////////////
+
+ExitProgram PROC
+	exit
+	ret	
+ExitProgram ENDP
+
+END main
