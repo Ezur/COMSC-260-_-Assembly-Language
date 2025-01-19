@@ -1,0 +1,28 @@
+; Assignment5.asm - Converting from Big Endian to Little Endian
+; Programmer: Elise Zur
+; Programmer ID: 1851550
+; Program Description: Using PTR and MOV, program will copy values from bigEndian
+;	to littleEndian, reversing the order of the bytes. 
+
+.386
+.model flat,stdcall
+.stack 4096
+ExitProcess PROTO, dwExitCode:DWORD
+
+.data
+	bigEndian BYTE 12h, 34h, 56h, 78h
+	littleEndian DWORD ?
+
+.code
+main PROC
+	mov ah, BYTE PTR [bigEndian]		; val 12 into ah reg
+	mov al, BYTE PTR [bigEndian+1]		; val 34 into al reg
+	mov WORD PTR [littleEndian+2], ax	; ax reg (1234) into lE
+	
+	mov ah, BYTE PTR [bigEndian+2]		; val 56 into ah reg
+	mov al, BYTE PTR [bigEndian+3]		; val 78 into al reg
+	mov WORD PTR [littleEndian], ax		; ax reg (5678) into lE
+
+INVOKE ExitProcess,0
+main ENDP
+END main
