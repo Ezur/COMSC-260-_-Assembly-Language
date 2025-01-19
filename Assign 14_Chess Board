@@ -1,0 +1,115 @@
+; Assignment14.asm - Chess Board with Alternating Colors
+; Programmer: Elise Zur
+; Programmer ID: 1851550
+; Program Description: Write a program that draws an
+;   8 x 8 chess board, every 500 milliseconds, change
+;   the color of the colored squares and re-display the
+;   board. Continue until you have shown the board 16
+;   times, using all possible 4-bit background colors.
+;   (The white squares remain white throughout.)
+
+INCLUDE Irvine32.inc
+
+PrintRowEven     PROTO times: BYTE, color: DWORD
+PrintRowOdd      PROTO times: BYTE, color: DWORD
+WriteColorBlock   PROTO color: DWORD
+PrintBoard       PROTO color: DWORD
+SetColor           PROTO
+
+;------------------------------------------------
+
+.data
+
+rows = 8
+columns = 8
+horizCharsPerSquare = 2
+loops = 16
+counter BYTE 0
+
+whiteSq = 15 + (15*16)
+default = white + (black*16)        ; 1st color is black and white
+
+;------------------------------------------------
+
+.code
+main PROC
+    mov ecx, loops
+    mov edx, 0
+    L1:                             ; displays chess board
+        INVOKE PrintBoard, edx      ; invokes PROC
+        inc counter                 ; increase counter, stops at 16
+        call SetColor
+        mov eax, 500                ; per delay, set to 500 milli seconds
+        call Delay
+        call Clrscr
+    loop L1
+    call defaultColor               
+exit
+main ENDP
+
+;------------------------------------------------
+PrintRowOdd PROC uses ecx, times:BYTE, color:DWORD
+    movzx ecx, times
+    L1:                                         ; color first then white
+        INVOKE WriteColorBlock, color           ; color square
+        INVOKE WriteColorBlock, whiteSq         ; white square
+    loop L1
+    call Crlf
+    ret
+PrintRowOdd ENDP
+;------------------------------------------------
+
+;------------------------------------------------
+PrintRowEven PROC uses ecx, times:BYTE, color:DWORD
+    movzx ecx, times
+    L1:                                         ; white first then color
+        INVOKE WriteColorBlock, whiteSq         ; white square
+        INVOKE WriteColorBlock, color           ; color square
+    loop L1
+    call defaultColor
+    call Crlf
+    ret
+PrintRowEven ENDP
+;------------------------------------------------
+
+;------------------------------------------------
+defaultColor PROC uses eax
+    mov eax, default
+    call SetTextColor
+    ret
+defaultColor ENDP
+;------------------------------------------------
+
+;------------------------------------------------
+WriteColorBlock PROC uses eax, color:DWORD
+    mov eax, color
+    call SetTextColor
+    mov al,' '
+    call WriteChar
+    call WriteChar
+    ret
+WriteColorBlock ENDP
+;------------------------------------------------
+
+;------------------------------------------------
+SetColor PROC
+    mov edx, 0
+    movzx edx, counter
+    imul edx, 16
+    ret
+SetColor ENDP
+;------------------------------------------------
+
+;------------------------------------------------
+PrintBoard PROC uses ecx, color: DWORD
+    mov ecx, columns / horizCharsPerSquare
+    L2:                                                             ; repeat loop until board is complete
+        INVOKE PrintRowEven, rows / horizCharsPerSquare, color      ; displays even rows
+        INVOKE PrintRowOdd, rows / horizCharsPerSquare, color       ; displays odd rows
+    loop L2
+    call defaultColor
+    ret
+PrintBoard ENDP
+;------------------------------------------------
+
+END MAIN
