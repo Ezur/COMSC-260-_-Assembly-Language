@@ -1,0 +1,26 @@
+; Lab Exercise 4		(LabExercise4.asm)
+; Program Description: assign int values into registers then subract
+;	them from eachother.
+;		A = (A + B) - (C + D)
+;		EAX = (EAX + EBX) - (ECX + EDX)
+; Author: Elise Zur, 1851550
+; Creation Date: 2/15/2022
+
+.386
+.model flat,stdcall
+.stack 4096
+ExitProcess PROTO, dwExitCode:DWORD
+.code
+main PROC
+	mov eax, 0
+	mov ebx, 6
+	mov ecx, 3
+	mov edx, 20
+
+	add eax, ebx
+	add ecx, edx
+	sub eax, ecx
+
+INVOKE ExitProcess,0
+main ENDP
+END main
