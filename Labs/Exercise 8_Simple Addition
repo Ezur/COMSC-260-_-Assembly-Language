@@ -1,0 +1,82 @@
+; LabExercise8.asm - Simple Addition
+; Programmer: Elise Zur
+; Programmer ID: 1851550
+; Program Description: Locate the cursor near the middle of the
+;	screen, prompts the user for 2 integers, adds the integers
+;	displays their sums. Repeat this 3 times. Clear the screen
+;	after each loop iteration. Set background & foreground
+;	colors each time. 
+
+INCLUDE Irvine32.inc
+
+.data
+firstPrompt BYTE "Enter first integer:   ",0
+secondPrompt BYTE "Enter second integer:  ",0
+sumPrompt BYTE "The sum is:		   ",0
+value DWORD ?
+
+.code
+main PROC
+	mov ecx, 3
+	mov eax, yellow + (red SHL 4)
+	add eax, 17
+	call SetTextColor
+	Call Clrscr
+	push ecx
+	push eax
+
+L1:
+	mov dl, 20					; DL is x-coord
+	mov dh, 10					; DH is y-coord
+	call Gotoxy					; locate cursor
+	
+	call printFirstPrompt
+
+	call Crlf
+	mov dl, 20
+	mov dh, 11
+	call Gotoxy
+
+	call printSecondPrompt
+	add eax, ebx
+
+	call Crlf
+	mov dl, 20
+	mov dh, 12
+	call Gotoxy
+
+	mov edx, OFFSET sumPrompt	
+	call WriteString
+	call WriteInt
+	call Crlf
+	call WaitMsg
+	
+	add eax, 17
+	call SetTextColor
+	call Clrscr
+
+	loop L1
+	pop eax
+	pop ecx
+
+
+printFirstPrompt PROC
+	mov edx, OFFSET firstPrompt	; display first integer prompt
+	call WriteString
+	call ReadInt				; read user input into EAX
+	mov ebx, eax				; move value of EAX into EBX
+	ret
+printFirstPrompt ENDP
+
+printSecondPrompt PROC
+	mov edx, OFFSET secondPrompt ; display second integer prompt
+	call WriteString
+	call ReadInt				; read user input into EAX
+	ret
+printSecondPrompt ENDP
+
+	exit
+
+Invoke ExitProcess,0
+main ENDP
+END main
