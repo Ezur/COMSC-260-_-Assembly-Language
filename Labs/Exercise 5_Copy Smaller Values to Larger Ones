@@ -1,0 +1,39 @@
+; Lab Exercise 5		(LabExercise5.asm)
+; Program Description: 
+;	Part 1: copy smaller values to larger ones (movzx/movsx)
+;	Part 2: move values in a data array. (1,2,3,4 -> 4,3,2,1)
+; Author: Elise Zur, 1851550
+; Creation Date: 2/24/2022
+
+.386
+.model flat,stdcall
+.stack 4096
+ExitProcess PROTO, dwExitCode:DWORD
+
+; PART 1
+.data
+	intA WORD 100
+	intB SWORD -100
+
+.code
+main PROC
+	movzx ebx, intA
+	movsx edx, intB
+
+; PART 2
+.data
+arrayD DWORD 1,2,3,4
+
+.code
+main PROC
+	mov eax, [arrayD]		;copy value 1
+	xchg eax, [arrayD+12]	;swap 1 with 4
+	mov arrayD, eax			;move value 4 to first spot
+
+	mov eax, [arrayD+4]		;copy value 2
+	xchg eax, [arrayD+8]	;swap 2 with 3
+	mov arrayD+4, eax		;move value 3 to second spot
+
+INVOKE ExitProcess,0
+main ENDP
+END main
